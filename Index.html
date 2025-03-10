@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de CPF</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #0a0a0a;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffcc;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
+            text-align: center;
+        }
+
+        h1 {
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 1rem;
+            border: 2px solid #00ffcc;
+            border-radius: 5px;
+            background-color: transparent;
+            color: #00ffcc;
+            margin-bottom: 20px;
+            width: 80%;
+            max-width: 300px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: 2px solid #00ffcc;
+            border-radius: 5px;
+            background-color: transparent;
+            color: #00ffcc;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        button:hover {
+            background-color: #00ffcc;
+            color: #0a0a0a;
+        }
+
+        #result {
+            margin-top: 20px;
+            text-align: left;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ffcc;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+            color: #00ffcc;
+        }
+
+        #result p {
+            margin: 10px 0;
+        }
+
+        #result strong {
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ffcc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Consulta de CPF</h1>
+        <input type="text" id="cpfInput" placeholder="Digite o CPF (apenas números)" maxlength="11">
+        <button id="fetchData">Consultar CPF</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('fetchData').addEventListener('click', function() {
+            const cpfInput = document.getElementById('cpfInput').value;
+
+            // Validação básica do CPF
+            if (!cpfInput || cpfInput.length !== 11 || isNaN(cpfInput)) {
+                alert('Por favor, insira um CPF válido com 11 dígitos.');
+                return;
+            }
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Carregando dados...</p>';
+
+            // Faz a requisição para o backend
+            fetch('/consultar-cpf', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ cpf: cpfInput }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                resultDiv.innerHTML = `
+                    <p><strong>Nome:</strong> ${data.nome || 'Não informado'}</p>
+                    <p><strong>CPF:</strong> ${data.cpf}</p>
+                    <p><strong>CNS:</strong> ${data.cns || 'Não informado'}</p>
+                    <p><strong>Município de Nascimento:</strong> ${data.municipioNascimento || 'Não informado'}</p>
+                    <p><strong>Município:</strong> ${data.municipio || 'Não informado'}</p>
+                    <p><strong>Mãe:</strong> ${data.mae || 'Não informado'}</p>
+                    <p><strong>Pai:</strong> ${data.pai || 'Não informado'}</p>
+                    <p><strong>Telefone:</strong> ${data.telefone || 'Não informado'}</p>
+                    <p><strong>Endereço:</strong> ${data.endereco.rua || 'Não informado'}, ${data.endereco.numero || 'S/N'}</p>
+                    <p><strong>Bairro:</strong> ${data.endereco.bairro || 'Não informado'}</p>
+                    <p><strong>Cidade:</strong> ${data.endereco.cidade || 'Não informado'}</p>
+                    <p><strong>CEP:</strong> ${data.endereco.cep || 'Não informado'}</p>
+                    <p><strong>RG:</strong> ${data.rg.numero || 'Não informado'}</p>
+                    <p><strong>Órgão Emissor:</strong> ${data.rg.orgao_emissor || 'Não informado'}</p>
+                    <p><strong>UF:</strong> ${data.rg.uf || 'Não informado'}</p>
+                    <p><strong>Data de Emissão:</strong> ${data.rg.data_emissao || 'Não informado'}</p>
+                `;
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                resultDiv.innerHTML = `<p>Erro: ${error.message}</p>`;
+            });
+        });
+    </script>
+</body>
+</html>
